@@ -4,4 +4,4 @@ a funny tab handover
 
 ## Performance
 
-![funny-tab](/funny-tab.gif)
+![funny-tab](http://qiniu.sevenyuan.cn/tab.gif)
