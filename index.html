@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>funny tab</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .sport-list::-webkit-scrollbar {
+            display: none;
+        }
+        .sport-list {
+            display: flex;
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow-x: scroll;
+        }
+        .sport-list li {
+            float: left;
+            padding: 10px 15px;
+        }
+        .sport-list li.active {
+            background-color: orange;
+        }
+        .move-line {
+            overflow-x: scroll;
+        }
+        .blank {
+            width: 687px;
+        }
+        .move-line .line {
+            width: 20px;
+            height: 2px;
+            background: red;
+            margin-left: 33px;
+            transition: margin .5s ease;
+        }
+        .divider {
+            border: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <ul class="sport-list">
+        <li class="active">football</li>
+        <li>basketball</li>
+        <li>pingpang</li>
+        <li>rugby</li>
+        <li>badminton</li>
+        <li>baseball</li>
+        <li>golf</li>
+    </ul>
+    <div class="move-line">
+        <div class="blank">
+            <div class="line"></div>
+        </div>
+    </div>
+    <div class="divider"></div>
+    <div class="container">
+        <span class="content">basketball</span>
+    </div>
+    <script>
+        const sportList = document.querySelector('.sport-list');
+        const moveLine = document.querySelector('.move-line');
+        const line = document.querySelector('.line');
+        const blank = document.querySelector('.blank');
+        const content = document.querySelector('.content');
+        const sportListChilds = Array.from(sportList.children);
+        const contentArr = ['football', 'basketball', 'pingpang', 'rugby', 'badminton', 'baseball', 'golf'];
+        const length = sportListChilds.length;
+        lineOperator(sportListChilds[0]);
+        content.innerHTML = contentArr[0];
+        blank.style.width = sumWidth() + 'px';
+
+        function sumWidth() {
+            let sum = 0;
+            sportListChilds.forEach((item) => {
+                sum += item.offsetWidth;
+            });
+            return sum;
+        }
+
+        let lastIndex = 0;
+        let curIndex = 0;
+        sportList.addEventListener('click', sportListHandler, true);
+        function sportListHandler(ev) {
+            const liCur = ev.target;
+            curIndex = sportListChilds.indexOf(liCur);
+            tabChange(curIndex, lastIndex, liCur);
+        }
+
+        function tabChange(cur, last, node) {
+            const liCur = node;
+            const trendRes = trend(curIndex, lastIndex);
+            if (trendRes !== 'KEEP') {
+                sportListChilds[curIndex].classList.add('active');
+                sportListChilds[lastIndex].classList.remove('active');
+                sportListChilds[lastIndex].removeAttribute('class');
+            }
+            lineOperator(liCur, trendRes);
+            content.innerHTML = contentArr[curIndex];
+            lastIndex = curIndex;
+        }
+
+        function trend(cur, last) {
+            if (cur - last > 0) {
+                return 'LEFT-TO-RIGHT';
+            } else if (cur - last < 0) {
+                return 'RIGHT-TO-LEFT';
+            } else {
+                return 'KEEP';
+            }
+        }
+
+        function lineOperator(curNode, pos) {
+            if (pos === 'KEEP') {
+                return;
+            }
+
+            const width = curNode.offsetWidth;
+            const oftLeft = curNode.offsetLeft;
+            const bodyWidth = document.body.clientWidth;
+            const curNodeWillMove = (oftLeft + (width - 20) / 2);
+            let distance;
+
+            if (pos === 'LEFT-TO-RIGHT') {
+                distance = (oftLeft - bodyWidth / 2) + width / 2;
+            } else {
+                if (oftLeft - bodyWidth / 2 < 0) {
+                    distance = (oftLeft - bodyWidth / 2) - width / 2;
+                } else {
+                    distance = (oftLeft - bodyWidth / 2) + width / 2;
+                }
+            }
+            sportList.scrollLeft = distance;
+            moveLine.scrollLeft = distance;
+            line.style.marginLeft = curNodeWillMove + 'px';
+        }
+
+        let startX,
+            endX;
+        document.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].pageX;
+        }, false);
+        document.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].pageX;
+            if (Math.abs(endX - startX) < 2) {
+                return;
+            }
+
+            if (endX - startX > 0) { // left to right
+                curIndex = curIndex - 1 <= -1 ? 0 : curIndex - 1;
+            } else { // right to left
+                curIndex = curIndex + 1 >= length - 1 ? length - 1 : curIndex + 1;
+            }
+            if (curIndex >= 0 && curIndex <= length - 1) {
+                const liCur = sportListChilds[curIndex];
+                tabChange(curIndex, lastIndex, liCur);
+            }
+        }, false);
+    </script>
+</body>
+</html>
